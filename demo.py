@@ -15,7 +15,18 @@ import argparse
 import pprint
 import pdb
 import time
+
+
+import sys
+ros_path = '/opt/ros/kinetic/lib/python2.7/dist-packages'
+if ros_path in sys.path:
+    sys.path.remove(ros_path)
+
 import cv2
+
+sys.path.append(ros_path)
+
+
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -166,11 +177,7 @@ if __name__ == '__main__':
     'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   pascal_classes = np.asarray(['__background__',
-                       'aeroplane', 'bicycle', 'bird', 'boat',
-                       'bottle', 'bus', 'car', 'cat', 'chair',
-                       'cow', 'diningtable', 'dog', 'horse',
-                       'motorbike', 'person', 'pottedplant',
-                       'sheep', 'sofa', 'train', 'tvmonitor'])
+                       'wine_cup', 'tall_cup', 'glass_jar'])
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -217,10 +224,11 @@ if __name__ == '__main__':
     gt_boxes = gt_boxes.cuda()
 
   # make variable
-  im_data = Variable(im_data, volatile=True)
-  im_info = Variable(im_info, volatile=True)
-  num_boxes = Variable(num_boxes, volatile=True)
-  gt_boxes = Variable(gt_boxes, volatile=True)
+  with torch.no_grad():
+      im_data = Variable(im_data)
+      im_info = Variable(im_info)
+      num_boxes = Variable(num_boxes)
+      gt_boxes = Variable(gt_boxes)
 
   if args.cuda > 0:
     cfg.CUDA = True
