@@ -107,6 +107,9 @@ def parse_args():
   parser.add_argument('--webcam_num', dest='webcam_num',
                       help='webcam ID number',
                       default=-1, type=int)
+  parser.add_argument('--vis_thresh', dest='vis_thresh',
+                      help='threshold of visualizing bounding box',
+                      default=0.5)
 
   args = parser.parse_args()
   return args
@@ -341,6 +344,8 @@ if __name__ == '__main__':
       misc_tic = time.time()
       if vis:
           im2show = np.copy(im)
+      bbox_path = os.path.join(args.image_dir, imglist[num_images][:-4] + "_bbx.txt")
+      label_bbox = []
       for j in xrange(1, len(pascal_classes)):
           inds = torch.nonzero(scores[:,j]>thresh).view(-1)
           # if there is det
@@ -359,8 +364,17 @@ if __name__ == '__main__':
             keep = nms(cls_boxes[order, :], cls_scores[order], cfg.TEST.NMS)
             cls_dets = cls_dets[keep.view(-1).long()]
             if vis:
-              im2show = vis_detections(im2show, pascal_classes[j], cls_dets.cpu().numpy(), 0.5)
-
+              dets = cls_dets.cpu().numpy()
+              im2show = vis_detections(im2show, pascal_classes[j], dets, args.vis_thresh)
+              for i in range(np.minimum(10, dets.shape[0])):
+                    bbox = tuple(int(np.round(x)) for x in dets[i, :4])
+                    score = dets[i, -1]
+                    if score > args.vis_thresh:
+                        label_bbox.append([pascal_classes[j], bbox])
+      with open(bbox_path, 'w') as f:
+          for item in label_bbox:
+            f.write('%s %d %d %d %d\n' % (item[0], item[1][0], item[1][1], item[1][2], item[1][3]))
+      
       misc_toc = time.time()
       nms_time = misc_toc - misc_tic
 

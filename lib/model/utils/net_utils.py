@@ -58,7 +58,6 @@ def vis_detections(im, class_name, dets, thresh=0.8):
                         1.0, (0, 0, 255), thickness=1)
     return im
 
-
 def adjust_learning_rate(optimizer, decay=0.1):
     """Sets the learning rate to the initial LR decayed by 0.5 every 20 epochs"""
     for param_group in optimizer.param_groups:
