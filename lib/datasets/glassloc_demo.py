@@ -48,7 +48,7 @@ class glassloc_demo(imdb):
         #self._classes = ('__background__', # always index 0
         #    'red hat', 'bag', 't-shirt', 'golf box')
         self._classes = ('__background__', # always index 0
-            'wine_cup', 'tall_cup', 'glass_jar')
+            'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks')
 
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'

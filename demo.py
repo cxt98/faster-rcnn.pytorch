@@ -180,7 +180,7 @@ if __name__ == '__main__':
     'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   pascal_classes = np.asarray(['__background__',
-                       'wine_cup', 'tall_cup', 'glass_jar'])
+                       'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks'])
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture(webcam_num)
     num_images = 0
   else:
-    imglist = os.listdir(args.image_dir)
+    imglist = [file for file in os.listdir(args.image_dir) if os.path.isfile(os.path.join(args.image_dir, file)) and file.endswith('.png')]
     num_images = len(imglist)
 
   print('Loaded Photo: {} images.'.format(num_images))

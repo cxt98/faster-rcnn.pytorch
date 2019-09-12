@@ -8,8 +8,8 @@
 """Blob helper functions."""
 
 # remove ROS path to use opencv properly
-import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+# import sys
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 
 import numpy as np
 # from scipy.misc import imread, imresize
