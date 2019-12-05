@@ -3,6 +3,10 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Jiasen Lu, Jianwei Yang, based on code from Ross Girshick
 # --------------------------------------------------------
+
+# python demo.py --load_dir /home/alienicp/pose_estimation_ws/src/faster-rcnn.pytorch/models/ --image_dir /media/alienicp/5f3d1485-53ed-4161-af42-63cef2fc27a1/home/logan/LFdata/real_test/lite_demo/0917/4/SubAperture/seg/  --checksession 1 --checkepoch 20 --checkpoint 599 --cuda --net vgg16 --dataset glassloc_demo --vis_thresh 0.1
+
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -47,11 +51,45 @@ from model.utils.blob import im_list_to_blob
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 import pdb
+from copy import deepcopy
 
 try:
     xrange          # Python 2
 except NameError:
     xrange = range  # Python 3
+
+def getJetColormap(depth, min, max):
+    img_r = deepcopy(depth)
+    img_g = deepcopy(depth)
+    img_b = deepcopy(depth)
+
+    # change all out of bound pixels into 0.2
+    mask = np.bitwise_or(depth < min, depth > max)
+    img_r[mask] = 0.2
+    img_g[mask] = 0.2
+    img_b[mask] = 0.2
+
+    range_depth = max - min
+
+    mask = depth < (min + 0.25 * range_depth)
+    img_r[mask] = 0
+    img_g[mask] = 4 * (depth[mask] - min) / range_depth
+
+    mask = depth < (min + 0.5 * range_depth)
+    img_r[mask] = 0
+    img_b[mask] = 1 + 4 * (min + 0.25 * range_depth - depth[mask]) / range_depth
+
+    mask = depth < (min + 0.75 * range_depth)
+    img_r[mask] = 4 * (depth[mask] - min - 0.5 * range_depth) / range_depth
+    img_b[mask] = 0
+
+    mask = depth >= (min + 0.75 * range_depth)
+    img_g[mask] = 1 + 4 * (min + 0.75 * range_depth - depth[mask]) / range_depth
+    img_b[mask] = 0
+
+    result = np.stack((img_r, img_g, img_b), axis=2)
+    return result
+
 
 
 def parse_args():
@@ -109,7 +147,10 @@ def parse_args():
                       default=-1, type=int)
   parser.add_argument('--vis_thresh', dest='vis_thresh',
                       help='threshold of visualizing bounding box',
-                      default=0.5)
+                      default=0.5, type=float)
+  parser.add_argument('--max_bbx', dest='max_bbx',
+                      help='maximum bounding boxes number',
+                      default=20, type=int)
 
   args = parser.parse_args()
   return args
@@ -179,8 +220,10 @@ if __name__ == '__main__':
   load_name = os.path.join(input_dir,
     'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
+  # pascal_classes = np.asarray(['__background__',
+  #                      'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks'])
   pascal_classes = np.asarray(['__background__',
-                       'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks'])
+                      't-slots'])
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -274,6 +317,8 @@ if __name__ == '__main__':
         im_file = os.path.join(args.image_dir, imglist[num_images])
         # im = cv2.imread(im_file)
         im_in = np.array(imread(im_file))
+
+      im_original = np.copy(im_in)
       if len(im_in.shape) == 2:
         im_in = im_in[:,:,np.newaxis]
         im_in = np.concatenate((im_in,im_in,im_in), axis=2)
@@ -365,9 +410,15 @@ if __name__ == '__main__':
             cls_dets = cls_dets[keep.view(-1).long()]
             if vis:
               dets = cls_dets.cpu().numpy()
-              im2show = vis_detections(im2show, pascal_classes[j], dets, args.vis_thresh)
-              for i in range(np.minimum(10, dets.shape[0])):
+              if len(im_original.shape) == 2:
+                  # use color encoding to generate im2show from im_original
+                  im2show = getJetColormap(im_original, 500, 1000)
+
+              im2show = vis_detections(im2show, pascal_classes[j], dets, args.max_bbx, args.vis_thresh)
+
+              for i in range(np.minimum(args.max_bbx, dets.shape[0])):
                     bbox = tuple(int(np.round(x)) for x in dets[i, :4])
+                    bbox = tuple([bbox[0], bbox[1], bbox[2]-bbox[0]+1, bbox[3]-bbox[1]+1])
                     score = dets[i, -1]
                     if score > args.vis_thresh:
                         label_bbox.append([pascal_classes[j], bbox])
@@ -386,8 +437,11 @@ if __name__ == '__main__':
       if vis and webcam_num == -1:
           # cv2.imshow('test', im2show)
           # cv2.waitKey(0)
-          result_path = os.path.join(args.image_dir, imglist[num_images][:-4] + "_det.jpg")
+          result_path = os.path.join(args.image_dir, imglist[num_images][:-4] + "_result.jpg")
           cv2.imwrite(result_path, im2show)
+          time_path = os.path.join(args.image_dir, "detection_time.txt")
+          with open(time_path, 'w') as f:
+            f.write('%f\n' % (detect_time + nms_time))
       else:
           im2showRGB = cv2.cvtColor(im2show, cv2.COLOR_BGR2RGB)
           cv2.imshow("frame", im2showRGB)
