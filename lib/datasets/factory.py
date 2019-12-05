@@ -16,10 +16,14 @@ from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.glassloc_demo import glassloc_demo
-
+from datasets.magna_tslots import magna_tslots
 import numpy as np
 
 # Set up voc_<year>_<split>
+for split in ['train', 'test']:
+    name = 'magna_tslots_{}'.format(split)
+    __sets[name] = (lambda split=split: magna_tslots(split))
+
 for split in ['train', 'test']:
     name = 'glassloc_demo_{}'.format(split)
     __sets[name] = (lambda split=split: glassloc_demo(split))
