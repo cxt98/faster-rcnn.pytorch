@@ -109,7 +109,7 @@ def parse_args():
                       default=-1, type=int)
   parser.add_argument('--vis_thresh', dest='vis_thresh',
                       help='threshold of visualizing bounding box',
-                      default=0.5)
+                      default=0.1)
 
   args = parser.parse_args()
   return args
