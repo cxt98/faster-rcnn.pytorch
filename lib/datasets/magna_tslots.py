@@ -37,23 +37,22 @@ except NameError:
 # <<<< obsolete
 
 
-class glassloc_demo(imdb):
+class magna_tslots(imdb):
     def __init__(self, image_set, devkit_path=None):
-        imdb.__init__(self, 'glassloc_demo_' + image_set)
+        imdb.__init__(self, 'magna_tslots_' + image_set)
         self._year = '2007'
         self._image_set = image_set
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
-        self._data_path = os.path.join(self._devkit_path, 'glassloc_demo')
+        self._data_path = os.path.join(self._devkit_path, 'tslots_16u_depth') # data path
+        print (self._devkit_path)
         #self._classes = ('__background__', # always index 0
         #    'red hat', 'bag', 't-shirt', 'golf box')
         self._classes = ('__background__', # always index 0
-            'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks')
-        # self._classes = ('__background__', # always index 0
-        #     't-slots')
+            't-slots')
 
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
-        self._image_ext = '.jpg'
+        self._image_ext = '.png'
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
         # self._roidb_handler = self.selective_search_roidb
@@ -256,7 +255,7 @@ class glassloc_demo(imdb):
     def _get_voc_results_file_template(self):
         # VOCdevkit/results/VOC2007/Main/<comp_id>_det_test_aeroplane.txt
         filename = self._get_comp_id() + '_det_' + self._image_set + '_{:s}.txt'
-        filedir = os.path.join(self._devkit_path, 'results', 'glassloc_demo', 'Main')
+        filedir = os.path.join(self._devkit_path, 'results', 'magna_tslots', 'Main')
         if not os.path.exists(filedir):
             os.makedirs(filedir)
         path = os.path.join(filedir, filename)
@@ -266,7 +265,7 @@ class glassloc_demo(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print('Writing {} glassloc_demo results file'.format(cls))
+            print('Writing {} magna_tslots results file'.format(cls))
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -284,13 +283,13 @@ class glassloc_demo(imdb):
         annopath = os.path.join(
             self._devkit_path,
             #'VOC' + self._year,
-			'glassloc_demo/'
+			'magna_tslots/'
             'Annotations',
             '{:s}.xml')
         imagesetfile = os.path.join(
             self._devkit_path,
             #'VOC' + self._year,
-			'glassloc_demo/',
+			'magna_tslots/',
             'ImageSets',
             'Main',
             self._image_set + '.txt')
@@ -364,7 +363,7 @@ class glassloc_demo(imdb):
 
 
 if __name__ == '__main__':
-    d = glassloc_demo('train')
+    d = magna_tslots('train')
     res = d.roidb
     from IPython import embed;
 

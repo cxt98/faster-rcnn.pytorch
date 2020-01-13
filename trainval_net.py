@@ -54,7 +54,7 @@ def parse_args():
                       default=20, type=int)
   parser.add_argument('--disp_interval', dest='disp_interval',
                       help='number of iterations to display',
-                      default=100, type=int)
+                      default=1, type=int)
   parser.add_argument('--checkpoint_interval', dest='checkpoint_interval',
                       help='number of iterations to display',
                       default=10000, type=int)
@@ -179,6 +179,10 @@ if __name__ == '__main__':
   elif args.dataset == "glassloc_demo":
       args.imdb_name = "glassloc_demo_train"
       args.imdbval_name = "glassloc_demo_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+  elif args.dataset == "magna_tslots":
+      args.imdb_name = "magna_tslots_train"
+      args.imdbval_name = "magna_tslots_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -333,8 +337,8 @@ if __name__ == '__main__':
       # backward
       optimizer.zero_grad()
       loss.backward()
-      if args.net == "vgg16":
-          clip_gradient(fasterRCNN, 10.)
+      #if args.net == "vgg16":
+      clip_gradient(fasterRCNN, 10.)
       optimizer.step()
 
       if step % args.disp_interval == 0:
@@ -375,17 +379,17 @@ if __name__ == '__main__':
         loss_temp = 0
         start = time.time()
 
-    
-    save_name = os.path.join(output_dir, 'faster_rcnn_{}_{}_{}.pth'.format(args.session, epoch, step))
-    save_checkpoint({
-      'session': args.session,
-      'epoch': epoch + 1,
-      'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
-      'optimizer': optimizer.state_dict(),
-      'pooling_mode': cfg.POOLING_MODE,
-      'class_agnostic': args.class_agnostic,
-    }, save_name)
-    print('save model: {}'.format(save_name))
+    if epoch % 5 == 0:
+      save_name = os.path.join(output_dir, 'faster_rcnn_{}_{}_{}.pth'.format(args.session, epoch, step))
+      save_checkpoint({
+        'session': args.session,
+        'epoch': epoch + 1,
+        'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'pooling_mode': cfg.POOLING_MODE,
+        'class_agnostic': args.class_agnostic,
+      }, save_name)
+      print('save model: {}'.format(save_name))
 
   if args.use_tfboard:
     logger.close()
