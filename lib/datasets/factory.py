@@ -17,9 +17,15 @@ from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.glassloc_demo import glassloc_demo
 from datasets.magna_tslots import magna_tslots
+from datasets.mid_bumper import mid_bumper
+
 import numpy as np
 
 # Set up voc_<year>_<split>
+for split in ['train', 'test']:
+    name = 'mid_bumper_{}'.format(split)
+    __sets[name] = (lambda split=split: mid_bumper(split))
+
 for split in ['train', 'test']:
     name = 'magna_tslots_{}'.format(split)
     __sets[name] = (lambda split=split: magna_tslots(split))

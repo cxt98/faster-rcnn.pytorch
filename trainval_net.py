@@ -54,7 +54,7 @@ def parse_args():
                       default=20, type=int)
   parser.add_argument('--disp_interval', dest='disp_interval',
                       help='number of iterations to display',
-                      default=1, type=int)
+                      default=100, type=int)
   parser.add_argument('--checkpoint_interval', dest='checkpoint_interval',
                       help='number of iterations to display',
                       default=10000, type=int)
@@ -183,6 +183,10 @@ if __name__ == '__main__':
   elif args.dataset == "magna_tslots":
       args.imdb_name = "magna_tslots_train"
       args.imdbval_name = "magna_tslots_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+  elif args.dataset == "mid_bumper":
+      args.imdb_name = "mid_bumper_train"
+      args.imdbval_name = "mid_bumper_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

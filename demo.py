@@ -150,7 +150,7 @@ def parse_args():
                       default=0.5, type=float)
   parser.add_argument('--max_bbx', dest='max_bbx',
                       help='maximum bounding boxes number',
-                      default=20, type=int)
+                      default=10, type=int)
 
   args = parser.parse_args()
   return args
@@ -223,7 +223,7 @@ if __name__ == '__main__':
   # pascal_classes = np.asarray(['__background__',
   #                      'wine_cup', 'tall_cup', 'glass_jar', 'cham_cup', 'starbucks'])
   pascal_classes = np.asarray(['__background__',
-                      't-slots'])
+                      'mid_bumper'])
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -322,6 +322,8 @@ if __name__ == '__main__':
       if len(im_in.shape) == 2:
         im_in = im_in[:,:,np.newaxis]
         im_in = np.concatenate((im_in,im_in,im_in), axis=2)
+      #photoneo
+      # im_in = (im_in-458.0)/660.0*255.0
       # rgb -> bgr
       im = im_in[:,:,::-1]
 
@@ -410,9 +412,10 @@ if __name__ == '__main__':
             cls_dets = cls_dets[keep.view(-1).long()]
             if vis:
               dets = cls_dets.cpu().numpy()
-              if len(im_original.shape) == 2:
-                  # use color encoding to generate im2show from im_original
-                  im2show = getJetColormap(im_original, 500, 1000)
+              # if len(im_original.shape) == 2:
+              #     # use color encoding to generate im2show from im_original
+              #     im2show = getJetColormap(im_original, 458, 1118)
+
 
               im2show = vis_detections(im2show, pascal_classes[j], dets, args.max_bbx, args.vis_thresh)
 
